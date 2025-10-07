@@ -1,0 +1,183 @@
+[gd_scene load_steps=2 format=3 uid="uid://cqs0nhx8genoj"]
+
+[ext_resource type="Script" path="res://scripts/sprite_view.gd" id="1_63xxx"]
+
+[node name="Sprite View" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_63xxx")
+
+[node name="Properties" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_top = 6.0
+offset_right = 360.0
+offset_bottom = 656.0
+
+[node name="Index" type="SpinBox" parent="Properties"]
+layout_mode = 2
+max_value = 0.0
+rounded = true
+prefix = " Sprite"
+
+[node name="Addr" type="LineEdit" parent="Properties"]
+layout_mode = 2
+text = " Address: 0x00000000"
+editable = false
+
+[node name="Mode" type="OptionButton" parent="Properties"]
+layout_mode = 2
+disabled = true
+selected = 0
+item_count = 2
+popup/item_0/text = "Mode: Uncompressed"
+popup/item_0/id = 0
+popup/item_1/text = "Mode: Compressed"
+popup/item_1/id = 1
+
+[node name="pxData" type="HBoxContainer" parent="Properties"]
+layout_mode = 2
+
+[node name="Clut" type="SpinBox" parent="Properties/pxData"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 16.0
+max_value = 32.0
+step = 16.0
+value = 32.0
+rounded = true
+editable = false
+prefix = " CLUT:"
+
+[node name="Bpp" type="SpinBox" parent="Properties/pxData"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 4.0
+max_value = 8.0
+step = 4.0
+value = 8.0
+rounded = true
+editable = false
+prefix = " Bit Depth:"
+
+[node name="sizing" type="HBoxContainer" parent="Properties"]
+layout_mode = 2
+
+[node name="Width" type="SpinBox" parent="Properties/sizing"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 65535.0
+value = 1.0
+rounded = true
+editable = false
+prefix = " Width:"
+
+[node name="Height" type="SpinBox" parent="Properties/sizing"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 65535.0
+value = 1.0
+rounded = true
+editable = false
+prefix = " Height:"
+
+[node name="vram" type="HBoxContainer" parent="Properties"]
+layout_mode = 2
+
+[node name="tw" type="SpinBox" parent="Properties/vram"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 65535.0
+value = 1.0
+rounded = true
+editable = false
+prefix = " tw:"
+
+[node name="th" type="SpinBox" parent="Properties/vram"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 65535.0
+value = 1.0
+rounded = true
+editable = false
+prefix = " th:"
+
+[node name="hash" type="LineEdit" parent="Properties/vram"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = " Hash: 0xFFFF"
+editable = false
+
+[node name="Label" type="Label" parent="Properties"]
+layout_mode = 2
+text = " Palette:"
+
+[node name="PalView" type="VBoxContainer" parent="Properties"]
+custom_minimum_size = Vector2(0, 316)
+layout_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="Properties"]
+layout_mode = 2
+alignment = 1
+
+[node name="Import" type="Button" parent="Properties/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Import"
+
+[node name="Export" type="Button" parent="Properties/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Export"
+
+[node name="ExportAll" type="Button" parent="Properties/Buttons"]
+layout_mode = 2
+text = "Export All Sprites"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(640, 298)
+
+[node name="hint" type="ReferenceRect" parent="."]
+visible = false
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 0
+offset_right = 16.0
+offset_bottom = 16.0
+border_width = 2.0
+editor_only = false
+
+[node name="ColorPicker" type="ColorPicker" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 980.0
+offset_top = 68.0
+offset_right = 1278.0
+offset_bottom = 675.0
+edit_intensity = false
+deferred_mode = true
+picker_shape = 1
+
+[node name="SaveDialog" type="FileDialog" parent="."]
+title = "Open a Directory"
+file_mode = 2
+access = 2
+use_native_dialog = true
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open a File"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.png")
+show_hidden_files = true
+use_native_dialog = true
+
+[connection signal="value_changed" from="Properties/Index" to="." method="_on_index_value_changed"]
+[connection signal="pressed" from="Properties/Buttons/Import" to="." method="_on_import_pressed"]
+[connection signal="pressed" from="Properties/Buttons/Export" to="." method="_on_export_pressed"]
+[connection signal="pressed" from="Properties/Buttons/ExportAll" to="." method="_on_export_all_pressed"]
+[connection signal="color_changed" from="ColorPicker" to="." method="_on_color_picker_color_changed"]
+[connection signal="dir_selected" from="SaveDialog" to="." method="_on_save_dialog_dir_selected"]
+[connection signal="file_selected" from="FileDialog" to="." method="_on_file_dialog_file_selected"]

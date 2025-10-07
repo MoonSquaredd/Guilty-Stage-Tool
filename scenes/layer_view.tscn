@@ -1,0 +1,110 @@
+[gd_scene load_steps=2 format=3 uid="uid://bfmw5guap3mvv"]
+
+[ext_resource type="Script" path="res://scripts/layer_view.gd" id="1_w336l"]
+
+[node name="layer_view" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_w336l")
+
+[node name="Properties" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_top = 6.0
+offset_right = 360.0
+offset_bottom = 656.0
+
+[node name="Index" type="SpinBox" parent="Properties"]
+layout_mode = 2
+max_value = 0.0
+rounded = true
+prefix = " Layer"
+
+[node name="Addr" type="LineEdit" parent="Properties"]
+layout_mode = 2
+text = " Address: 0x00000000"
+editable = false
+
+[node name="id" type="SpinBox" parent="Properties"]
+layout_mode = 2
+max_value = 65535.0
+rounded = true
+editable = false
+prefix = " Layer Id:"
+
+[node name="layData" type="HBoxContainer" parent="Properties"]
+layout_mode = 2
+
+[node name="prio" type="SpinBox" parent="Properties/layData"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 65535.0
+rounded = true
+editable = false
+prefix = " Priority:"
+
+[node name="scroll" type="SpinBox" parent="Properties/layData"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 65535.0
+step = 100.0
+value = 1000.0
+rounded = true
+editable = false
+prefix = " Scrollrate:"
+
+[node name="offsets" type="HBoxContainer" parent="Properties"]
+layout_mode = 2
+
+[node name="xoff" type="SpinBox" parent="Properties/offsets"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -32767.0
+max_value = 32767.0
+rounded = true
+editable = false
+prefix = " X Offset:"
+
+[node name="yoff" type="SpinBox" parent="Properties/offsets"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -32767.0
+max_value = 32767.0
+rounded = true
+editable = false
+prefix = " Y Offset:"
+
+[node name="options" type="HBoxContainer" parent="Properties"]
+layout_mode = 2
+alignment = 1
+
+[node name="back" type="CheckBox" parent="Properties/options"]
+layout_mode = 2
+disabled = true
+text = "Background"
+
+[node name="fore" type="CheckBox" parent="Properties/options"]
+layout_mode = 2
+disabled = true
+text = "Foreground"
+
+[node name="Buttons" type="HBoxContainer" parent="Properties"]
+layout_mode = 2
+alignment = 1
+
+[node name="Import" type="Button" parent="Properties/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 4
+disabled = true
+text = "Import"
+
+[node name="Export" type="Button" parent="Properties/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 4
+disabled = true
+text = "Export"
+
+[connection signal="value_changed" from="Properties/Index" to="." method="_on_index_value_changed"]
