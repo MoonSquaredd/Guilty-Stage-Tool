@@ -1,6 +1,6 @@
 extends Control
 
-var compSpr = preload("res://comp.png")
+var compSpr = preload("res://images/comp.png")
 
 @export var spriteList = []
 
