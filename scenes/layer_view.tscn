@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bfmw5guap3mvv"]
 
-[ext_resource type="Script" path="res://scripts/layer_view.gd" id="1_w336l"]
+[ext_resource type="Script" uid="uid://cq61wtk04dhxh" path="res://scripts/layer_view.gd" id="1_w336l"]
 
 [node name="layer_view" type="Control"]
 layout_mode = 3
@@ -106,5 +106,10 @@ layout_mode = 2
 size_flags_horizontal = 4
 disabled = true
 text = "Export"
+
+[node name="viewer" type="Control" parent="."]
+z_index = -1
+anchors_preset = 0
+pivot_offset = Vector2(640, 360)
 
 [connection signal="value_changed" from="Properties/Index" to="." method="_on_index_value_changed"]

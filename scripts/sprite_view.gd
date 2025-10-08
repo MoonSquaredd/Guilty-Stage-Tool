@@ -1,7 +1,5 @@
 extends Control
 
-var compSpr = preload("res://images/comp.png")
-
 @export var spriteList = []
 
 enum file_save_mode {
@@ -25,7 +23,7 @@ func show_picker(event: InputEvent, node):
 		$ColorPicker.visible = true
 
 func load_pal(spr:sprite):
-	var rowCnt = spr.colorCnt / 16.0
+	var rowCnt = clamp(spr.colorCnt / 16.0,1,16)
 	var row = 1
 	
 	for node in ($"Properties/PalView".get_children()):
@@ -66,39 +64,10 @@ func load_pal(spr:sprite):
 			col.add_child(border)
 			rowNode.add_child(col)
 
-func build_sprite(spr:sprite):
-	if spr.mode == 1:
-		return null
-	
-	var img = Image.create_empty(spr.width,spr.height,false,Image.FORMAT_RGBA8)
-	var p = 0
-	
-	if spr.bpp == 8:
-		for y in spr.height:
-			for x in spr.width:
-				var index = spr.tex.decode_u8(p)
-				img.set_pixel(x,y,spr.pal[index])
-				p += 1
-	elif spr.bpp == 4:
-		for y in spr.height:
-			for x in spr.width:
-				var index = spr.tex.decode_u8(floor(p/2.0))
-				if p & 0x1 == 1:
-					index = (index & 0xF0) >> 4
-				else:
-					index &= 0x0F
-				img.set_pixel(x,y,spr.pal[index])
-				p += 1
-	
-	return img
-
 func draw_sprite(spr:sprite):
-	var img = build_sprite(spr)
-	if img == null:
-		img = compSpr
+	var img = spr.build_sprite()
 	curSpriteImg = img
-	var tex = ImageTexture.create_from_image(img)
-	$"Sprite2D".texture = tex
+	$"Sprite2D".texture = ImageTexture.create_from_image(img)
 
 func _on_index_value_changed(value: float) -> void:
 	$hint.visible = false
@@ -153,7 +122,7 @@ func _on_save_dialog_dir_selected(dir: String) -> void:
 			curSpriteImg.save_png(dir + "/sprite_%03d.png" % idx)
 		file_save_mode.EXPORT_ALL_TILE:
 			for i in range($"Properties/Index".max_value):
-				var img = build_sprite(spriteList[i])
+				var img = spriteList[i].build_sprite()
 				img.save_png(dir + "/sprite_%03d.png" % i)
 
 func make_sprite(img):

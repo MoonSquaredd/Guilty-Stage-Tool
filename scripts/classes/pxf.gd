@@ -10,6 +10,8 @@ enum MODE {
 var address: int = 0
 var colorCnt: int = 256
 
+var layersUsing = []
+
 var mode: MODE = MODE.UNCOMPRESSED
 var clut: int = 32
 var bpp: int = 8
@@ -20,6 +22,8 @@ var th: int = 7
 var hash: int = 0xFFFF
 var pal: PackedColorArray
 var tex: PackedByteArray
+
+var compSpr = preload("res://images/comp.png")
 
 func palReindex():
 	var newBuf = PackedColorArray()
@@ -34,6 +38,33 @@ func palReindex():
 			newBuf[i] = pal[i]
 	
 	pal = newBuf
+
+func build_sprite():
+	var img = Image.create_empty(width,height,false,Image.FORMAT_RGBA8)
+	if mode == MODE.COMPRESSED:
+		img = compSpr
+		img.resize(width,height,Image.INTERPOLATE_NEAREST)
+		return img
+	var p = 0
+	
+	if bpp == 8:
+		for y in height:
+			for x in width:
+				var index = tex.decode_u8(p)
+				img.set_pixel(x,y,pal[index])
+				p += 1
+	elif bpp == 4:
+		for y in height:
+			for x in width:
+				var index = tex.decode_u8(floor(p/2.0))
+				if p & 0x1 == 1:
+					index = (index & 0xF0) >> 4
+				else:
+					index &= 0x0F
+				img.set_pixel(x,y,pal[index])
+				p += 1
+	
+	return img
 
 func assemble():
 	var buf = PackedByteArray()
@@ -65,7 +96,7 @@ func _init(buf, addr):
 	mode = buf.decode_u16(addr)
 	
 	if mode > 3:
-		if mode & 0xf00 == 0:
+		if (mode & 0xf00) >> 8 == 0:
 			clut = 32
 		else:
 			clut = 16
@@ -75,7 +106,7 @@ func _init(buf, addr):
 		else:
 			bpp = 4
 		
-		if mode & 0xf0 == 0:
+		if (mode & 0xf000) >> 8 == 0:
 			mode = MODE.UNCOMPRESSED
 		else:
 			mode = MODE.COMPRESSED
@@ -94,7 +125,7 @@ func _init(buf, addr):
 		hash = buf.decode_u16(addr+14)
 	
 	colorCnt = pow(16,bpp/4)
-	if clut == 16:
+	if (clut == 16) && (bpp == 8):
 		colorCnt /= 2
 	pal.resize(colorCnt)
 		

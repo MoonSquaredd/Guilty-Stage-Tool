@@ -42,9 +42,11 @@ func parse_layers():
 		var id = org.decode_u16(p)
 		
 		match id:
-			1:
+			layer.orgID.SPRITE:
+				var spr = tileList[org.decode_u16(p+2)]
+				spr.layersUsing.append(lastLayer)
 				p += 8
-			2:
+			layer.orgID.LAYER:
 				var lyr = layer.new()
 				lyr.address = orgAddr+p
 				lyr.index = org.decode_u16(p+2)
@@ -57,13 +59,15 @@ func parse_layers():
 				$"TabContainer/Tiles/Layer View/Properties/Index".max_value = $"TabContainer/Tiles/Layer View".layerList.size()-1
 				lastLayer += 1
 				p += 12
-			3:
+			layer.orgID.BACKGROUND:
 				$"TabContainer/Tiles/Layer View".layerList[lastLayer].background = true
 				p += 4
-			4:
+			layer.orgID.FOREGROUND:
 				$"TabContainer/Tiles/Layer View".layerList[lastLayer].foreground = true
 				p += 4
-			0xe:
+			layer.orgID.ANIMATION:
+				p += 4
+			layer.orgID.ANIM_VAR_DURATION:
 				p += 6
 			0xff:
 				break
@@ -128,6 +132,8 @@ func _on_file_dialog_file_selected(path: String) -> void:
 	
 	orgAddr = fileBuf.decode_u32(tiles)+tiles
 	org = fileBuf.slice(orgAddr,fileBuf.decode_u32(tiles+4)+tiles)
+	$"TabContainer/Tiles/Layer View".org = org
+	$"TabContainer/Tiles/Layer View".orgAddr = orgAddr
 	print("Orgaddr:  0x%08X" % orgAddr)
 	
 	for i in range(8):
@@ -152,6 +158,7 @@ func _on_file_dialog_file_selected(path: String) -> void:
 	parse_tiles()
 	parse_layers()
 	$"TabContainer/Tiles/Tile View".spriteList = tileList
+	$"TabContainer/Tiles/Layer View".tileList = tileList
 	$"TabContainer/Tiles/Tile View/Properties/Index".max_value = tileList.size()-1
 	$"TabContainer/Tiles/Tile View".call("_on_index_value_changed",0)
 	$"TabContainer/Tiles/Layer View".call("_on_index_value_changed",0)
