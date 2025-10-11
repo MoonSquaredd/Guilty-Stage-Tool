@@ -3,14 +3,12 @@ extends Control
 @export var spriteList = []
 
 enum file_save_mode {
-	SAVE_STAGE = 0,
-	EXPORT_TILE = 1,
-	EXPORT_ALL_TILE = 2
+	EXPORT_TILE = 0,
+	EXPORT_ALL_TILE = 1
 }
 
 var selected_colnode
 var copiedCol
-var curSpriteImg
 var saveMode: file_save_mode
 var undo_redo = UndoRedo.new()
 
@@ -65,9 +63,9 @@ func load_pal(spr:sprite):
 			rowNode.add_child(col)
 
 func draw_sprite(spr:sprite):
-	var img = spr.build_sprite()
-	curSpriteImg = img
-	$"Sprite2D".texture = ImageTexture.create_from_image(img)
+	if spr.cachedTexture == null:
+		spr.build_sprite()
+	$"Sprite2D".texture = spr.cachedTexture
 
 func _on_index_value_changed(value: float) -> void:
 	$hint.visible = false
@@ -89,11 +87,13 @@ func _on_index_value_changed(value: float) -> void:
 func change_color(node, color, idx, spr):
 	node.color = color
 	spr.pal[idx.to_int()] = color
+	spr.cachedTexture = null
 	draw_sprite(spr)
 
 func undo_color(node, color, idx, spr):
 	node.color = color
 	spr.pal[idx.to_int()] = color
+	spr.cachedTexture = null
 	draw_sprite(spr)
 
 func _on_color_picker_color_changed(color: Color) -> void:
@@ -119,7 +119,8 @@ func _on_save_dialog_dir_selected(dir: String) -> void:
 	match saveMode:
 		file_save_mode.EXPORT_TILE:
 			var idx = $"Properties/Index".value
-			curSpriteImg.save_png(dir + "/sprite_%03d.png" % idx)
+			var img = spriteList[idx].cachedTexture.get_image()
+			img.save_png(dir + "/sprite_%03d.png" % idx)
 		file_save_mode.EXPORT_ALL_TILE:
 			for i in range($"Properties/Index".max_value):
 				var img = spriteList[i].build_sprite()

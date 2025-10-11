@@ -4,10 +4,25 @@ extends Control
 @export var orgAddr: int
 @export var layerList = []
 @export var tileList = []
+@export var moveNode: Control
+
+func reset():
+	for node in moveNode.get_children():
+		node.free()
 
 func draw_layer(lyr:layer):
-	for sprNode in $viewer.get_children():
-		sprNode.free()
+	for node in moveNode.get_children():
+		node.visible = false
+	
+	var layerNode = get_node_or_null("Layer %d" % lyr.index)
+	if layerNode == null:
+		layerNode = Control.new()
+		layerNode.name = "Layer %d" % lyr.index
+		layerNode.z_index = -1 - lyr.priority
+		moveNode.add_child(layerNode)
+	else:
+		layerNode.visible = true
+		return
 	var p = 12
 	while p > 0:
 		var point = lyr.address-orgAddr+p
@@ -16,12 +31,17 @@ func draw_layer(lyr:layer):
 			layer.orgID.SPRITE:
 				var spr = tileList[org.decode_u16(point+2)]
 				var sprNode = Sprite2D.new()
-				var img = spr.build_sprite()
-				sprNode.texture = ImageTexture.create_from_image(img)
-				var posx = 640+org.decode_s16(point+4) - lyr.xoffset
+				if spr.cachedTexture == null:
+					spr.build_sprite()
+				sprNode.texture = spr.cachedTexture
+				var posx
+				if lyr.b == false:
+					posx = 640+org.decode_s16(point+4) - lyr.xoffset
+				else:
+					posx = 640+org.decode_s16(point+4) + (spr.width + lyr.xoffset)
 				var posy = 720-org.decode_s16(point+6) - lyr.yoffset
 				sprNode.position = Vector2(posx,posy)
-				$viewer.add_child(sprNode)
+				layerNode.add_child(sprNode)
 				p += 8
 			layer.orgID.LAYER,layer.orgID.ANIMATION,0xFFFF:
 				p = -1

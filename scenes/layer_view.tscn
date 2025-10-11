@@ -107,9 +107,4 @@ size_flags_horizontal = 4
 disabled = true
 text = "Export"
 
-[node name="viewer" type="Control" parent="."]
-z_index = -1
-anchors_preset = 0
-pivot_offset = Vector2(640, 360)
-
 [connection signal="value_changed" from="Properties/Index" to="." method="_on_index_value_changed"]

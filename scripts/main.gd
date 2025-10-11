@@ -15,13 +15,15 @@ func reset():
 	fileBuf.clear()
 	objects.clear()
 	tileList.clear()
-	$TabContainer.current_tab = 0
-	for tab in $TabContainer.get_children():
+	$HUD/TabContainer.current_tab = 0
+	for tab in $HUD/TabContainer.get_children():
 		if tab.name != "Tiles":
 			tab.free()
-	$"TabContainer/Tiles/Tile View".spriteList.clear()
-	$"TabContainer/Tiles/Tile View".call("reset")
-	$"TabContainer/Tiles/Layer View".layerList.clear()
+	$"HUD/TabContainer/Tiles/Tile View".spriteList.clear()
+	$"HUD/TabContainer/Tiles/Tile View".call("reset")
+	$"HUD/TabContainer/Tiles/Layer View".moveNode = $"Layers"
+	$"HUD/TabContainer/Tiles/Layer View".layerList.clear()
+	$"HUD/TabContainer/Tiles/Layer View".call("reset")
 
 func parse_tiles():
 	var i = 0
@@ -40,7 +42,6 @@ func parse_layers():
 	var lastLayer = -1
 	while p < org.size():
 		var id = org.decode_u16(p)
-		
 		match id:
 			layer.orgID.SPRITE:
 				var spr = tileList[org.decode_u16(p+2)]
@@ -55,21 +56,24 @@ func parse_layers():
 				lyr.scrollrate = org.decode_u16(p+6)
 				lyr.xoffset = org.decode_s16(p+8)
 				lyr.yoffset = org.decode_s16(p+10)
-				$"TabContainer/Tiles/Layer View".layerList.append(lyr)
-				$"TabContainer/Tiles/Layer View/Properties/Index".max_value = $"TabContainer/Tiles/Layer View".layerList.size()-1
+				$"HUD/TabContainer/Tiles/Layer View".layerList.append(lyr)
+				$"HUD/TabContainer/Tiles/Layer View/Properties/Index".max_value = $"HUD/TabContainer/Tiles/Layer View".layerList.size()-1
 				lastLayer += 1
 				p += 12
 			layer.orgID.BACKGROUND:
-				$"TabContainer/Tiles/Layer View".layerList[lastLayer].background = true
+				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].background = true
 				p += 4
 			layer.orgID.FOREGROUND:
-				$"TabContainer/Tiles/Layer View".layerList[lastLayer].foreground = true
+				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].foreground = true
 				p += 4
 			layer.orgID.ANIMATION:
 				p += 4
+			layer.orgID.UNK_11: #only Reload and Slash Paris ever uses this
+				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].b = true
+				p += 4
 			layer.orgID.ANIM_VAR_DURATION:
 				p += 6
-			0xff:
+			0xffff:
 				break
 			_:
 				p += 4
@@ -106,6 +110,26 @@ func assembly_bg():
 	buf.encode_u32((objects.size()+1)*4,buf.size())
 	return buf
 
+func _on_tiles_tab_changed(tab: int) -> void:
+	match tab:
+		1:
+			$Layers.visible = true
+			$"HUD/TabContainer/Tiles/Layer View".call("_on_index_value_changed",0)
+		2:
+			$Layers.visible = true
+			for lyr in $"HUD/TabContainer/Tiles/Layer View".layerList:
+				$"HUD/TabContainer/Tiles/Layer View".call("draw_layer",lyr)
+			for lyr in $Layers.get_children():
+				lyr.visible = true
+		_: 
+			$Layers.visible = false
+
+func _on_tab_container_tab_changed(tab: int) -> void:
+	if tab != 0:
+		$Layers.visible = false
+	else:
+		_on_tiles_tab_changed($HUD/TabContainer/Tiles.current_tab)
+
 func _on_open_bg_button_pressed() -> void:
 	$FileDialog.file_mode = 0
 	$FileDialog.visible = true
@@ -132,8 +156,8 @@ func _on_file_dialog_file_selected(path: String) -> void:
 	
 	orgAddr = fileBuf.decode_u32(tiles)+tiles
 	org = fileBuf.slice(orgAddr,fileBuf.decode_u32(tiles+4)+tiles)
-	$"TabContainer/Tiles/Layer View".org = org
-	$"TabContainer/Tiles/Layer View".orgAddr = orgAddr
+	$"HUD/TabContainer/Tiles/Layer View".org = org
+	$"HUD/TabContainer/Tiles/Layer View".orgAddr = orgAddr
 	print("Orgaddr:  0x%08X" % orgAddr)
 	
 	for i in range(8):
@@ -153,24 +177,40 @@ func _on_file_dialog_file_selected(path: String) -> void:
 			spriteView.spriteList = obj.sprites
 			spriteView.call("_on_index_value_changed",0)
 			tab.add_child(spriteView)
-			$TabContainer.add_child(tab)
+			$HUD/TabContainer.add_child(tab)
 			print("Object %d: 0x%08X" % [i, addr])
 	parse_tiles()
 	parse_layers()
-	$"TabContainer/Tiles/Tile View".spriteList = tileList
-	$"TabContainer/Tiles/Layer View".tileList = tileList
-	$"TabContainer/Tiles/Tile View/Properties/Index".max_value = tileList.size()-1
-	$"TabContainer/Tiles/Tile View".call("_on_index_value_changed",0)
-	$"TabContainer/Tiles/Layer View".call("_on_index_value_changed",0)
-	$"TabContainer/Tiles/Tile View/Properties/Buttons/Import".disabled = false
-	$"TabContainer/Tiles/Tile View/Properties/Buttons/Export".disabled = false
-	$"TabContainer/Tiles/Tile View/Properties/Buttons/ExportAll".disabled = false
+	$"HUD/TabContainer/Tiles/Tile View".spriteList = tileList
+	$"HUD/TabContainer/Tiles/Layer View".tileList = tileList
+	$"HUD/TabContainer/Tiles/Tile View/Properties/Index".max_value = tileList.size()-1
+	$"HUD/TabContainer/Tiles/Tile View".call("_on_index_value_changed",0)
+	$"HUD/TabContainer/Tiles/Layer View".call("_on_index_value_changed",0)
+	_on_tiles_tab_changed($HUD/TabContainer/Tiles.current_tab)
+	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/Import".disabled = false
+	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/Export".disabled = false
+	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/ExportAll".disabled = false
 
 func _ready() -> void:
 	reset()
-	$"TabContainer/Tiles/Tile View/Properties/Buttons/Import".disabled = true
-	$"TabContainer/Tiles/Tile View/Properties/Buttons/Export".disabled = true
-	$"TabContainer/Tiles/Tile View/Properties/Buttons/ExportAll".disabled = true
+	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/Import".disabled = true
+	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/Export".disabled = true
+	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/ExportAll".disabled = true
 
-func _process(_delta: float) -> void:
-	pass
+func _process(delta: float) -> void:
+	if Input.is_action_pressed("reset_camera"):
+		$Camera.offset = Vector2(640,360)
+		$Camera.zoom = Vector2(1,1)
+	
+	if Input.is_action_pressed("camera_up"):
+		$Camera.offset.y -= 8
+	if Input.is_action_pressed("camera_left"):
+		$Camera.offset.x -= 8
+	if Input.is_action_pressed("camera_down"):
+		$Camera.offset.y += 8
+	if Input.is_action_pressed("camera_right"):
+		$Camera.offset.x += 8
+	if Input.is_action_pressed("camera_zoom_in"):
+		$Camera.zoom += Vector2(2*delta,2*delta)
+	if Input.is_action_pressed("camera_zoom_out"):
+		$Camera.zoom -= Vector2(2*delta,2*delta)

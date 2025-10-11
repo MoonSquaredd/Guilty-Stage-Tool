@@ -7,10 +7,19 @@ enum MODE {
 	PALETTE = 3
 }
 
+enum GG_VER {
+	ML = 0,
+	X = 1,
+	XX = 2
+}
+
 var address: int = 0
 var colorCnt: int = 256
+var gg_ver: GG_VER = GG_VER.XX
+var decompressed = false
 
 var layersUsing = []
+var cachedTexture: ImageTexture
 
 var mode: MODE = MODE.UNCOMPRESSED
 var clut: int = 32
@@ -24,6 +33,79 @@ var pal: PackedColorArray
 var tex: PackedByteArray
 
 var compSpr = preload("res://images/comp.png")
+
+func ggx_decompress(buf:PackedByteArray,addr,pixsize):
+	var out = PackedByteArray()
+	out.resize(pixsize)
+	out.fill(0)
+	
+	var bytePtr = addr
+	var pixPtr = 0
+	var t1
+	var t2
+	
+	while pixsize > 0:
+		var byte = buf.decode_u8(bytePtr)
+		bytePtr += 1
+		if ((byte & 0xC0) == 0):
+			var count = byte
+			while (count >= 0):
+				if ((pixPtr & 0x3) == 0):
+					if ((bytePtr & 0x3) == 0):
+						while (count >= 5):
+							var pix32 = buf.decode_s32(bytePtr)
+							count -= 0x4
+							bytePtr += 0x4
+							out.encode_s32(pixPtr,pix32)
+							pixPtr += 0x4
+							pixsize -= 4
+					elif ((bytePtr & 0x1) == 0):
+						while (count >= 0x3):
+							var pix16 = buf.decode_u16(bytePtr)
+							count -= 0x2
+							bytePtr += 0x2
+							out.encode_s16(pixPtr,pix16)
+							pixPtr += 0x2
+							pixsize -= 2
+					while (count >= 0x5):
+						var pix32 = 0
+						for i in range(4):
+							byte = buf.decode_u8(bytePtr)
+							bytePtr += 1
+							pix32 |= (byte << ((i*8) & 0x1F))
+						out.encode_s32(pixPtr,pix32)
+						count -= 4 
+						pixPtr += 4
+						pixsize -= 4
+				byte = buf.decode_u8(bytePtr)
+				count -= 1
+				bytePtr += 1
+				out.encode_s8(pixPtr,byte)
+				pixPtr += 1
+				pixsize -= 1
+			t2 = buf.decode_u8(bytePtr-1)
+		else:
+			var count = (byte + 0xC3) & 0xFF	
+			while ((pixPtr & 0x3) != 0) && (count >= 0):
+				out.encode_s8(pixPtr,t2)
+				count -= 1
+				pixPtr += 1
+				pixsize -= 1
+			t1 = (t2 << 24) | (t2 << 16) | (t2 << 8) | t2
+			while (count >= 0x4):
+				out.encode_s32(pixPtr,t1)
+				count -= 4
+				pixPtr += 4
+				pixsize -= 4
+			count -= 1
+			while count >= 0:
+				out.encode_s8(pixPtr,t2)
+				count -= 1
+				pixPtr += 1
+				pixsize -= 1
+	decompressed = true
+	tex = out
+	
 
 func palReindex():
 	var newBuf = PackedColorArray()
@@ -41,10 +123,12 @@ func palReindex():
 
 func build_sprite():
 	var img = Image.create_empty(width,height,false,Image.FORMAT_RGBA8)
-	if mode == MODE.COMPRESSED:
+	if mode == MODE.COMPRESSED && decompressed == false:
 		img = compSpr
 		img.resize(width,height,Image.INTERPOLATE_NEAREST)
-		return img
+		cachedTexture = ImageTexture.create_from_image(img)
+		return
+	
 	var p = 0
 	
 	if bpp == 8:
@@ -64,7 +148,7 @@ func build_sprite():
 				img.set_pixel(x,y,pal[index])
 				p += 1
 	
-	return img
+	cachedTexture = ImageTexture.create_from_image(img)
 
 func assemble():
 	var buf = PackedByteArray()
@@ -96,6 +180,7 @@ func _init(buf, addr):
 	mode = buf.decode_u16(addr)
 	
 	if mode > 3:
+		gg_ver = GG_VER.X
 		if (mode & 0xf00) >> 8 == 0:
 			clut = 32
 		else:
@@ -147,5 +232,10 @@ func _init(buf, addr):
 	var pixaddr = addr+16+(colorCnt*4)
 	
 	if mode == MODE.COMPRESSED:
-		return
+		if gg_ver == GG_VER.X:
+			ggx_decompress(buf,pixaddr,pixsize)
+			return
+		else:
+			return
 	tex = buf.slice(pixaddr,pixaddr+pixsize)
+	decompressed = true

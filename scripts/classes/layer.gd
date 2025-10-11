@@ -9,6 +9,7 @@ enum orgID {
 	ANIM_DURATION = 7,
 	ANIM_LAYER_ON = 8,
 	ANIM_LAYER_OFF = 9,
+	UNK_11 = 11,
 	ANIM_VAR_DURATION = 14
 }
 
@@ -20,3 +21,4 @@ var xoffset: int = 0
 var yoffset: int = 0
 var background: bool = false
 var foreground: bool = false
+var b: bool = false

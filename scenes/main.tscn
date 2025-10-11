@@ -7,32 +7,43 @@
 [node name="Main" type="Node"]
 script = ExtResource("1_ig7tw")
 
-[node name="TabContainer" type="TabContainer" parent="."]
+[node name="Camera" type="Camera2D" parent="."]
+offset = Vector2(640, 360)
+editor_draw_limits = true
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="TabContainer" type="TabContainer" parent="HUD"]
 offset_top = 32.0
 offset_right = 1280.0
 offset_bottom = 96.0
 current_tab = 0
 
-[node name="Tiles" type="TabContainer" parent="TabContainer"]
+[node name="Tiles" type="TabContainer" parent="HUD/TabContainer"]
 layout_mode = 2
 current_tab = 0
 metadata/_tab_index = 0
 
-[node name="Tile View" parent="TabContainer/Tiles" instance=ExtResource("2_0xm2m")]
+[node name="Tile View" parent="HUD/TabContainer/Tiles" instance=ExtResource("2_0xm2m")]
 layout_mode = 2
 metadata/_tab_index = 0
 
-[node name="Layer View" parent="TabContainer/Tiles" instance=ExtResource("3_h2yge")]
+[node name="Layer View" parent="HUD/TabContainer/Tiles" instance=ExtResource("3_h2yge")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="OpenBGButton" type="Button" parent="."]
+[node name="Stage View" type="Control" parent="HUD/TabContainer/Tiles"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="OpenBGButton" type="Button" parent="HUD"]
 offset_right = 64.0
 offset_bottom = 32.0
 text = "Open"
 
-[node name="SaveBGButton" type="Button" parent="."]
+[node name="SaveBGButton" type="Button" parent="HUD"]
 offset_left = 68.0
 offset_right = 132.0
 offset_bottom = 32.0
@@ -46,6 +57,15 @@ filters = PackedStringArray("*.cmp", "*.bin", "*.lot")
 show_hidden_files = true
 use_native_dialog = true
 
-[connection signal="pressed" from="OpenBGButton" to="." method="_on_open_bg_button_pressed"]
-[connection signal="pressed" from="SaveBGButton" to="." method="_on_save_bg_button_pressed"]
+[node name="Layers" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[connection signal="tab_changed" from="HUD/TabContainer" to="." method="_on_tab_container_tab_changed"]
+[connection signal="tab_changed" from="HUD/TabContainer/Tiles" to="." method="_on_tiles_tab_changed"]
+[connection signal="pressed" from="HUD/OpenBGButton" to="." method="_on_open_bg_button_pressed"]
+[connection signal="pressed" from="HUD/SaveBGButton" to="." method="_on_save_bg_button_pressed"]
 [connection signal="file_selected" from="FileDialog" to="." method="_on_file_dialog_file_selected"]
