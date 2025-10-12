@@ -153,7 +153,10 @@ func build_sprite():
 func assemble():
 	var buf = PackedByteArray()
 	buf.resize(16+(colorCnt*4))
-	buf.encode_u16(0,mode)
+	if decompressed == true:
+		buf.encode_u16(0,MODE.UNCOMPRESSED)
+	else:
+		buf.encode_u16(0,mode)
 	buf.encode_u16(2,clut)
 	buf.encode_u16(4,bpp)
 	buf.encode_u16(6,width)

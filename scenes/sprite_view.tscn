@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cqs0nhx8genoj"]
 
-[ext_resource type="Script" path="res://scripts/sprite_view.gd" id="1_63xxx"]
+[ext_resource type="Script" uid="uid://jw02unj5f3g6" path="res://scripts/sprite_view.gd" id="1_63xxx"]
 
 [node name="Sprite View" type="Control"]
 layout_mode = 3

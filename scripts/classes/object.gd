@@ -27,6 +27,10 @@ func _init(addr, end, buf:PackedByteArray):
 	var _palPtr = buf.decode_u32(addr+12)+addr
 	cells = buf.slice(celPtr,sprPtr)
 	parse_sprites(sprPtr, buf.slice(sprPtr,scrPtr))
+	#if palPtr-addr != 0xFFFFFFFF:
+	#	scripts = buf.slice(scrPtr,palPtr)
+	#	palettes = buf.slice(palPtr,end)
+	#else:
 	scripts = buf.slice(scrPtr,end)
 
 func separate(buf:PackedByteArray):
@@ -56,5 +60,10 @@ func assemble():
 	var scrPtr = buf.size()
 	buf.encode_u32(8,scrPtr)
 	buf.append_array(scripts)
+	
+	#if palettes != null:
+		#var palPtr = buf.size()
+		#buf.encode_u32(12,palPtr)
+		#buf.append_array(palettes)
 	
 	return buf

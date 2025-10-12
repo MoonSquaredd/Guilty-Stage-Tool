@@ -122,8 +122,9 @@ func _on_save_dialog_dir_selected(dir: String) -> void:
 			var img = spriteList[idx].cachedTexture.get_image()
 			img.save_png(dir + "/sprite_%03d.png" % idx)
 		file_save_mode.EXPORT_ALL_TILE:
-			for i in range($"Properties/Index".max_value):
-				var img = spriteList[i].build_sprite()
+			for i in range(spriteList.size()):
+				spriteList[i].build_sprite()
+				var img = spriteList[i].cachedTexture.get_image()
 				img.save_png(dir + "/sprite_%03d.png" % i)
 
 func make_sprite(img):

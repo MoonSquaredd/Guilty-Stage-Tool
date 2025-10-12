@@ -10,7 +10,8 @@ func reset():
 	for node in moveNode.get_children():
 		node.free()
 
-func draw_layer(lyr:layer):
+func draw_layer(lyr):
+	lyr = layerList[lyr]
 	for node in moveNode.get_children():
 		node.visible = false
 	
@@ -59,4 +60,4 @@ func _on_index_value_changed(value: float) -> void:
 	$"Properties/offsets/yoff".value = lyr.yoffset
 	$"Properties/options/back".button_pressed = lyr.background
 	$"Properties/options/fore".button_pressed = lyr.foreground
-	draw_layer(lyr)
+	draw_layer(value)

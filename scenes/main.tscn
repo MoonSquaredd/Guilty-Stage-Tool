@@ -38,6 +38,12 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 2
 
+[node name="animToggle" type="CheckButton" parent="HUD/TabContainer/Tiles/Stage View"]
+layout_mode = 0
+offset_right = 44.0
+offset_bottom = 24.0
+text = " Toggle Animations"
+
 [node name="OpenBGButton" type="Button" parent="HUD"]
 offset_right = 64.0
 offset_bottom = 32.0
@@ -48,6 +54,26 @@ offset_left = 68.0
 offset_right = 132.0
 offset_bottom = 32.0
 text = "Save"
+
+[node name="ImportObj" type="Button" parent="HUD"]
+offset_left = 136.0
+offset_right = 264.0
+offset_bottom = 32.0
+text = "Import Object"
+
+[node name="ExportObj" type="Button" parent="HUD"]
+visible = false
+offset_left = 268.0
+offset_right = 396.0
+offset_bottom = 32.0
+text = "Export Object"
+
+[node name="DeleteObj" type="Button" parent="HUD"]
+visible = false
+offset_left = 400.0
+offset_right = 528.0
+offset_bottom = 32.0
+text = "Delete Object"
 
 [node name="FileDialog" type="FileDialog" parent="."]
 title = "Open a File"
@@ -68,4 +94,7 @@ offset_bottom = 40.0
 [connection signal="tab_changed" from="HUD/TabContainer/Tiles" to="." method="_on_tiles_tab_changed"]
 [connection signal="pressed" from="HUD/OpenBGButton" to="." method="_on_open_bg_button_pressed"]
 [connection signal="pressed" from="HUD/SaveBGButton" to="." method="_on_save_bg_button_pressed"]
+[connection signal="pressed" from="HUD/ImportObj" to="." method="_on_import_obj_pressed"]
+[connection signal="pressed" from="HUD/ExportObj" to="." method="_on_export_obj_pressed"]
+[connection signal="pressed" from="HUD/DeleteObj" to="." method="_on_delete_obj_pressed"]
 [connection signal="file_selected" from="FileDialog" to="." method="_on_file_dialog_file_selected"]
