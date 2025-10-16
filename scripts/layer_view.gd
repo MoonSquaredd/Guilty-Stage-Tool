@@ -1,7 +1,5 @@
 extends Control
 
-@export var org: PackedByteArray
-@export var orgAddr: int
 @export var layerList = []
 @export var tileList = []
 @export var moveNode: Control
@@ -15,40 +13,66 @@ func draw_layer(lyr):
 	for node in moveNode.get_children():
 		node.visible = false
 	
-	var layerNode = get_node_or_null("Layer %d" % lyr.index)
+	var layerNode = moveNode.get_node_or_null("Layer %d" % lyr.index)
 	if layerNode == null:
 		layerNode = Control.new()
 		layerNode.name = "Layer %d" % lyr.index
 		layerNode.z_index = -1 - lyr.priority
+		layerNode.position.x = -lyr.xoffset
+		layerNode.position.y = -lyr.yoffset
 		moveNode.add_child(layerNode)
 	else:
 		layerNode.visible = true
 		return
-	var p = 12
-	while p > 0:
-		var point = lyr.address-orgAddr+p
-		var id = org.decode_u16(point)
-		match id:
-			layer.orgID.SPRITE:
-				var spr = tileList[org.decode_u16(point+2)]
-				var sprNode = Sprite2D.new()
-				if spr.cachedTexture == null:
-					spr.build_sprite()
-				sprNode.texture = spr.cachedTexture
-				var posx
-				if lyr.b == false:
-					posx = 640+org.decode_s16(point+4) - lyr.xoffset
-				else:
-					posx = 640+org.decode_s16(point+4) + (spr.width + lyr.xoffset)
-				var posy = 720-org.decode_s16(point+6) - lyr.yoffset
-				sprNode.position = Vector2(posx,posy)
-				layerNode.add_child(sprNode)
-				p += 8
-			layer.orgID.LAYER,layer.orgID.ANIMATION,0xFFFF:
-				p = -1
-				break
-			_:
-				p += 4
+	
+	for i in range(lyr.tiles.size()):
+		var tile = lyr.tiles[i]
+		var spr = tileList[tile.i]
+		var sprNode = Sprite2D.new()
+		if spr.cachedTexture == null:
+			spr.build_sprite()
+		sprNode.texture = spr.cachedTexture
+		var posx
+		if lyr.flip == false:
+			posx = 640+tile.x
+		else:
+			posx = 640-tile.x + spr.width
+			sprNode.flip_h = true
+		var posy = 720-tile.y
+		sprNode.position = Vector2(posx,posy)
+		layerNode.add_child(sprNode)
+
+# Properties Change
+# [
+func _on_prio_value_changed(value: float) -> void:
+	var lyr = layerList[$Properties/Index.value]
+	lyr.priority = value
+	var layerNode = moveNode.get_node_or_null("Layer %d" % lyr.index)
+	if layerNode != null:
+		layerNode.z_index = -1 - lyr.priority
+
+func _on_scroll_value_changed(value: float) -> void:
+	var lyr = layerList[$Properties/Index.value]
+	lyr.scrollrate = value
+
+func _on_xoff_value_changed(value: float) -> void:
+	var lyr = layerList[$Properties/Index.value]
+	lyr.xoffset = value
+	var layerNode = moveNode.get_node_or_null("Layer %d" % lyr.index)
+	if layerNode != null:
+		layerNode.position.x = -value
+
+func _on_yoff_value_changed(value: float) -> void:
+	var lyr = layerList[$Properties/Index.value]
+	lyr.yoffset = value
+	var layerNode = moveNode.get_node_or_null("Layer %d" % lyr.index)
+	if layerNode != null:
+		layerNode.position.y = -value
+
+func _on_blend_toggled(toggled_on: bool) -> void:
+	var lyr = layerList[$Properties/Index.value]
+	lyr.blend = toggled_on
+# ]
 
 func _on_index_value_changed(value: float) -> void:
 	var lyr = layerList[value]
@@ -60,4 +84,5 @@ func _on_index_value_changed(value: float) -> void:
 	$"Properties/offsets/yoff".value = lyr.yoffset
 	$"Properties/options/back".button_pressed = lyr.background
 	$"Properties/options/fore".button_pressed = lyr.foreground
+	$"Properties/options/blend".button_pressed = lyr.blend
 	draw_layer(value)

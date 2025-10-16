@@ -41,9 +41,8 @@ layout_mode = 2
 [node name="prio" type="SpinBox" parent="Properties/layData"]
 layout_mode = 2
 size_flags_horizontal = 3
-max_value = 65535.0
+max_value = 256.0
 rounded = true
-editable = false
 prefix = " Priority:"
 
 [node name="scroll" type="SpinBox" parent="Properties/layData"]
@@ -53,7 +52,6 @@ max_value = 65535.0
 step = 100.0
 value = 1000.0
 rounded = true
-editable = false
 prefix = " Scrollrate:"
 
 [node name="offsets" type="HBoxContainer" parent="Properties"]
@@ -65,7 +63,6 @@ size_flags_horizontal = 3
 min_value = -32767.0
 max_value = 32767.0
 rounded = true
-editable = false
 prefix = " X Offset:"
 
 [node name="yoff" type="SpinBox" parent="Properties/offsets"]
@@ -74,7 +71,6 @@ size_flags_horizontal = 3
 min_value = -32767.0
 max_value = 32767.0
 rounded = true
-editable = false
 prefix = " Y Offset:"
 
 [node name="options" type="HBoxContainer" parent="Properties"]
@@ -90,6 +86,10 @@ text = "Background"
 layout_mode = 2
 disabled = true
 text = "Foreground"
+
+[node name="blend" type="CheckBox" parent="Properties/options"]
+layout_mode = 2
+text = "Blending"
 
 [node name="Buttons" type="HBoxContainer" parent="Properties"]
 layout_mode = 2
@@ -108,3 +108,8 @@ disabled = true
 text = "Export"
 
 [connection signal="value_changed" from="Properties/Index" to="." method="_on_index_value_changed"]
+[connection signal="value_changed" from="Properties/layData/prio" to="." method="_on_prio_value_changed"]
+[connection signal="value_changed" from="Properties/layData/scroll" to="." method="_on_scroll_value_changed"]
+[connection signal="value_changed" from="Properties/offsets/xoff" to="." method="_on_xoff_value_changed"]
+[connection signal="value_changed" from="Properties/offsets/yoff" to="." method="_on_yoff_value_changed"]
+[connection signal="toggled" from="Properties/options/blend" to="." method="_on_blend_toggled"]

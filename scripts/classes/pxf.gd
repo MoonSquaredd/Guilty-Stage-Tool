@@ -105,7 +105,6 @@ func ggx_decompress(buf:PackedByteArray,addr,pixsize):
 				pixsize -= 1
 	decompressed = true
 	tex = out
-	
 
 func palReindex():
 	var newBuf = PackedColorArray()

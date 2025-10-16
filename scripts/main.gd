@@ -2,6 +2,8 @@ extends Node
 
 var sprView = preload("res://scenes/sprite_view.tscn")
 
+@onready var conf = stageConfig.new()
+
 const SEPARATOR = 0xFFFFFFFF
 
 enum file_mode {
@@ -25,6 +27,7 @@ func reset():
 	fileBuf.clear()
 	objects.clear()
 	tileList.clear()
+	org.clear()
 	$HUD/TabContainer.current_tab = 0
 	for tab in $HUD/TabContainer.get_children():
 		if tab.name != "Tiles":
@@ -56,14 +59,25 @@ func parse_layers():
 		var id = org.decode_u16(p)
 		match id:
 			layer.orgID.SPRITE:
-				var spr = tileList[org.decode_u16(p+2)]
+				var tile = org.decode_u16(p+2)
+				var xoff = org.decode_s16(p+4)
+				var yoff = org.decode_u16(p+6)
+				
+				var entry = {
+					i = tile,
+					x = xoff,
+					y = yoff
+				}
+				
+				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].tiles.append(entry)
+				
+				var spr = tileList[tile]
 				spr.layersUsing.append(lastLayer)
 				p += 8
 			layer.orgID.LAYER:
 				var lyr = layer.new()
 				lyr.address = orgAddr+p
 				lyr.index = org.decode_u16(p+2)
-				print("layer %d" % lyr.index)
 				lyr.priority = org.decode_u16(p+4)
 				lyr.scrollrate = org.decode_u16(p+6)
 				lyr.xoffset = org.decode_s16(p+8)
@@ -79,21 +93,28 @@ func parse_layers():
 				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].foreground = true
 				p += 4
 			layer.orgID.ANIMATION:
-				var anim = {
-					current = 0,
-					frame = 0,
-					frames = []
-				}
+				var anim = AnimLayer.new()
 				animations.append(anim)
 				lastAnimFrame = -1
 				lastAnim += 1
 				p += 4
-			layer.orgID.UNK_11: #only Reload and Slash Paris ever uses this
-				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].b = true
+			layer.orgID.UNK_10: 
+				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].a = true
+				p += 4
+			layer.orgID.FLIP_HORIZONTAL: #only GGX, Reload and Slash Paris ever uses this
+				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].flip = true
+				p += 4
+			layer.orgID.BLENDING_ADD:
+				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].blend = true
+				p += 4
+			layer.orgID.UNK_13: 
+				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].d = true
 				p += 4
 			layer.orgID.ANIM_DURATION:
 				var animFrame = {
 					duration = org.decode_u16(p+2),
+					dur_min = org.decode_u16(p+2),
+					dur_max = org.decode_u16(p+2),
 					active_layers = [],
 					inactive_layers = []
 				}
@@ -106,6 +127,8 @@ func parse_layers():
 				var dur = randi_range(min,max)
 				var animFrame = {
 					duration = dur,
+					dur_min = min,
+					dur_max = max,
 					active_layers = [],
 					inactive_layers = []
 				}
@@ -123,12 +146,21 @@ func parse_layers():
 			_:
 				p += 4
 
+func create_object_tab(obj):
+	var tab = TabContainer.new()
+	tab.name = "Object %d" % (objects.size()-1)
+	var spriteView = sprView.instantiate()
+	spriteView.spriteList = obj.sprites
+	spriteView.call("_on_index_value_changed",0)
+	tab.add_child(spriteView)
+	$HUD/TabContainer.add_child(tab)
+
 func separate(buf:PackedByteArray):
 	var reminder = buf.size() % 16
 	for i in range((16-reminder)):
 		buf.append(0xFF)
 
-func assembly_bg():
+func assemble_bg():
 	var buf = PackedByteArray()
 	buf.resize((objects.size()+2)*4)
 	separate(buf)
@@ -139,7 +171,18 @@ func assembly_bg():
 	separate(buf)
 	
 	buf.encode_u32(newTiles,buf.size()-newTiles)
-	buf.append_array(org)
+	var newOrg = PackedByteArray()
+	var laylis = $"HUD/TabContainer/Tiles/Layer View".layerList
+	for i in range(laylis.size()):
+		var lyr = laylis[i]
+		var lyBuf = lyr.assemble()
+		newOrg.append_array(lyBuf)
+	for i in range(animations.size()):
+		var anim = animations[i]
+		var aniBuf = anim.assemble()
+		newOrg.append_array(aniBuf)
+	separate(newOrg)
+	buf.append_array(newOrg)
 	
 	for i in range(tileList.size()):
 		var spr = tileList[i].assemble()
@@ -159,11 +202,12 @@ func _on_tiles_tab_changed(tab: int) -> void:
 	match tab:
 		1:
 			$Layers.visible = true
-			$"HUD/TabContainer/Tiles/Layer View".call("_on_index_value_changed",0)
+			$"HUD/TabContainer/Tiles/Layer View".call("_on_index_value_changed",$"HUD/TabContainer/Tiles/Layer View/Properties/Index".value)
 		2:
 			$Layers.visible = true
 			for lyr in range($"HUD/TabContainer/Tiles/Layer View".layerList.size()):
-				var layerNode = $Layers.get_node_or_null("Layer %d" % lyr)
+				var id = $"HUD/TabContainer/Tiles/Layer View".layerList[lyr].index
+				var layerNode = $Layers.get_node_or_null("Layer %d" % id)
 				if layerNode == null:
 					$"HUD/TabContainer/Tiles/Layer View".call("draw_layer",lyr)
 			for lyr in $Layers.get_children():
@@ -221,30 +265,27 @@ func _on_file_dialog_file_selected(path: String) -> void:
 		var buf
 		match fileMode:
 			file_mode.SAVE_BG:
-				buf = assembly_bg()
+				$HUD/Info.text = "Saved stage to " + path
+				buf = assemble_bg()
 			file_mode.EXPORT_OBJECT:
 				var id = $HUD/TabContainer.current_tab - 1
+				$HUD/Info.text = "Exported object %d to %s" % [id, path]
 				buf = objects[id].assemble()
 		var fw = FileAccess.open(path,FileAccess.WRITE)
 		fw.store_buffer(buf)
 		fw.close()
 		return
 	elif fileMode == file_mode.IMPORT_OBJECT:
+		$HUD/Info.text = "Imported object from " + path
 		var fr = FileAccess.open(path,FileAccess.READ)
 		var buf = fr.get_buffer(fr.get_length())
 		fr.close()
 		var obj = object.new(0, buf.size(), buf)
 		objects.append(obj)
-		var tab = TabContainer.new()
-		tab.name = "Object %d" % (objects.size()-1)
-		var spriteView = sprView.instantiate()
-		spriteView.spriteList = obj.sprites
-		spriteView.call("_on_index_value_changed",0)
-		tab.add_child(spriteView)
-		$HUD/TabContainer.add_child(tab)
+		create_object_tab(obj)
 		return
 	reset()
-	print(path)
+	$HUD/Info.text = "Loaded stage from " + path
 	var fr = FileAccess.open(path, FileAccess.READ)
 	fileBuf = fr.get_buffer(fr.get_length())
 	fr.close()
@@ -254,8 +295,6 @@ func _on_file_dialog_file_selected(path: String) -> void:
 	
 	orgAddr = fileBuf.decode_u32(tiles)+tiles
 	org = fileBuf.slice(orgAddr,fileBuf.decode_u32(tiles+4)+tiles)
-	$"HUD/TabContainer/Tiles/Layer View".org = org
-	$"HUD/TabContainer/Tiles/Layer View".orgAddr = orgAddr
 	print("Orgaddr:  0x%08X" % orgAddr)
 	
 	for i in range(8):
@@ -269,13 +308,7 @@ func _on_file_dialog_file_selected(path: String) -> void:
 		else:
 			var obj = object.new(addr, fileBuf.decode_u32((i+2)*4), fileBuf)
 			objects.append(obj)
-			var tab = TabContainer.new()
-			tab.name = "Object %d" % i
-			var spriteView = sprView.instantiate()
-			spriteView.spriteList = obj.sprites
-			spriteView.call("_on_index_value_changed",0)
-			tab.add_child(spriteView)
-			$HUD/TabContainer.add_child(tab)
+			create_object_tab(obj)
 			print("Object %d: 0x%08X" % [i, addr])
 	parse_tiles()
 	parse_layers()
@@ -289,32 +322,23 @@ func _on_file_dialog_file_selected(path: String) -> void:
 	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/Export".disabled = false
 	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/ExportAll".disabled = false
 
+func _on_load_config_item_selected(index: int) -> void:
+	if conf.loadedConfig != index:
+		conf.load_config(index,$Layers.get_children(),animations,objects)
+
 func _ready() -> void:
 	reset()
+	for i in range(conf.stages.size()):
+		var name = conf.stages.keys()[i]
+		name = name.replace_char("_".unicode_at(0)," ".unicode_at(0))
+		var value = conf.stages.values()[i]
+		$"HUD/TabContainer/Tiles/Stage View/Properties/LoadConfig".add_item(name,value)
+	$"HUD/TabContainer/Tiles/Stage View/Properties/LoadConfig".selected = conf.stages.None
 	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/Import".disabled = true
 	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/Export".disabled = true
 	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/ExportAll".disabled = true
 
 func _process(delta: float) -> void:
-	if $"HUD/TabContainer/Tiles/Stage View/animToggle".button_pressed == true && $HUD/TabContainer/Tiles.current_tab == 2:
-		for i in range(animations.size()):
-			var anim = animations[i]
-			var frame = anim.frames[anim.current]
-			
-			if anim.frame > frame.duration:
-				anim.frame = 0
-				anim.current += 1
-				if anim.current > anim.frames.size()-1:
-					anim.current = 0
-			else:
-				for j in frame.active_layers:
-					var lyr = $Layers.get_node_or_null("Layer %d" % j)
-					lyr.visible = true
-				for j in frame.inactive_layers:
-					var lyr = $Layers.get_node_or_null("Layer %d" % j)
-					lyr.visible = false
-				anim.frame += 1
-
 	if Input.is_action_just_pressed("hide_hud"):
 		$HUD.visible = !$HUD.visible
 	if Input.is_action_pressed("reset_camera"):
@@ -333,3 +357,24 @@ func _process(delta: float) -> void:
 		$Camera.zoom += Vector2(2*delta,2*delta)
 	if Input.is_action_pressed("camera_zoom_out"):
 		$Camera.zoom -= Vector2(2*delta,2*delta)
+		
+	if $"HUD/TabContainer/Tiles/Stage View/Properties/animToggle".button_pressed == true && $HUD/TabContainer/Tiles.current_tab == 2:
+		for i in range(animations.size()):
+			var anim = animations[i]
+			var frame = anim.frames[anim.current]
+			
+			if anim.frame > frame.duration:
+				anim.frame = 0
+				anim.current += 1
+				if anim.current > anim.frames.size()-1:
+					anim.current = 0
+			else:
+				for j in frame.active_layers:
+					var lyr = $Layers.get_node_or_null("Layer %d" % j)
+					if lyr != null:
+						lyr.visible = anim.enabled
+				for j in frame.inactive_layers:
+					var lyr = $Layers.get_node_or_null("Layer %d" % j)
+					if lyr != null:
+						lyr.visible = false
+				anim.frame += 1
