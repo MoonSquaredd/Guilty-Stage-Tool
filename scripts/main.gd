@@ -35,6 +35,7 @@ func reset():
 	$"HUD/TabContainer/Tiles/Tile View".spriteList.clear()
 	$"HUD/TabContainer/Tiles/Tile View".call("reset")
 	$"HUD/TabContainer/Tiles/Layer View".moveNode = $"Layers"
+	$"HUD/TabContainer/Tiles/Layer View".highlight = $highlight
 	$"HUD/TabContainer/Tiles/Layer View".layerList.clear()
 	$"HUD/TabContainer/Tiles/Layer View".call("reset")
 
@@ -61,7 +62,7 @@ func parse_layers():
 			layer.orgID.SPRITE:
 				var tile = org.decode_u16(p+2)
 				var xoff = org.decode_s16(p+4)
-				var yoff = org.decode_u16(p+6)
+				var yoff = org.decode_s16(p+6)
 				
 				var entry = {
 					i = tile,
@@ -69,9 +70,21 @@ func parse_layers():
 					y = yoff
 				}
 				
+				var spr = tileList[tile]
+				
+				if xoff < $"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].lowest_x:
+					$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].lowest_x = xoff
+				elif xoff+spr.width > $"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].highest_x:
+					$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].highest_x = xoff+spr.width
+				
+				if yoff-spr.height < $"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].lowest_y:
+					$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].lowest_y = yoff-spr.height
+				elif yoff > $"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].highest_y:
+					$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].highest_y = yoff
+				
 				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].tiles.append(entry)
 				
-				var spr = tileList[tile]
+				
 				spr.layersUsing.append(lastLayer)
 				p += 8
 			layer.orgID.LAYER:

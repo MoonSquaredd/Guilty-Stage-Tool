@@ -16,6 +16,7 @@ layout_mode = 0
 offset_top = 6.0
 offset_right = 360.0
 offset_bottom = 656.0
+mouse_filter = 2
 
 [node name="Index" type="SpinBox" parent="Properties"]
 layout_mode = 2
@@ -32,7 +33,6 @@ editable = false
 layout_mode = 2
 max_value = 65535.0
 rounded = true
-editable = false
 prefix = " Layer Id:"
 
 [node name="layData" type="HBoxContainer" parent="Properties"]
@@ -79,17 +79,37 @@ alignment = 1
 
 [node name="back" type="CheckBox" parent="Properties/options"]
 layout_mode = 2
-disabled = true
+theme_override_constants/outline_size = 8
 text = "Background"
 
 [node name="fore" type="CheckBox" parent="Properties/options"]
 layout_mode = 2
-disabled = true
+theme_override_constants/outline_size = 8
 text = "Foreground"
 
 [node name="blend" type="CheckBox" parent="Properties/options"]
 layout_mode = 2
+theme_override_constants/outline_size = 8
 text = "Blending"
+
+[node name="options2" type="HBoxContainer" parent="Properties"]
+layout_mode = 2
+alignment = 1
+
+[node name="flip" type="CheckBox" parent="Properties/options2"]
+layout_mode = 2
+theme_override_constants/outline_size = 8
+text = "Flip Horizontally*"
+
+[node name="unk10" type="CheckBox" parent="Properties/options2"]
+layout_mode = 2
+theme_override_constants/outline_size = 8
+text = "unk10"
+
+[node name="unk13" type="CheckBox" parent="Properties/options2"]
+layout_mode = 2
+theme_override_constants/outline_size = 8
+text = "unk13"
 
 [node name="Buttons" type="HBoxContainer" parent="Properties"]
 layout_mode = 2
@@ -107,9 +127,46 @@ size_flags_horizontal = 4
 disabled = true
 text = "Export"
 
+[node name="SprProperties" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 1080.0
+offset_top = 6.0
+offset_right = 1280.0
+offset_bottom = 206.0
+
+[node name="tile" type="SpinBox" parent="SprProperties"]
+layout_mode = 2
+max_value = 1000.0
+rounded = true
+prefix = "Tile"
+
+[node name="xpos" type="SpinBox" parent="SprProperties"]
+layout_mode = 2
+min_value = -32767.0
+max_value = 32767.0
+rounded = true
+prefix = "X:"
+
+[node name="ypos" type="SpinBox" parent="SprProperties"]
+layout_mode = 2
+min_value = -32767.0
+max_value = 32767.0
+rounded = true
+prefix = "Y:"
+
 [connection signal="value_changed" from="Properties/Index" to="." method="_on_index_value_changed"]
+[connection signal="value_changed" from="Properties/id" to="." method="_on_id_value_changed"]
 [connection signal="value_changed" from="Properties/layData/prio" to="." method="_on_prio_value_changed"]
 [connection signal="value_changed" from="Properties/layData/scroll" to="." method="_on_scroll_value_changed"]
 [connection signal="value_changed" from="Properties/offsets/xoff" to="." method="_on_xoff_value_changed"]
 [connection signal="value_changed" from="Properties/offsets/yoff" to="." method="_on_yoff_value_changed"]
+[connection signal="toggled" from="Properties/options/back" to="." method="_on_back_toggled"]
+[connection signal="toggled" from="Properties/options/fore" to="." method="_on_fore_toggled"]
 [connection signal="toggled" from="Properties/options/blend" to="." method="_on_blend_toggled"]
+[connection signal="toggled" from="Properties/options2/flip" to="." method="_on_flip_toggled"]
+[connection signal="toggled" from="Properties/options2/unk10" to="." method="_on_unk_10_toggled"]
+[connection signal="toggled" from="Properties/options2/unk13" to="." method="_on_unk_13_toggled"]
+[connection signal="value_changed" from="SprProperties/tile" to="." method="_on_tile_value_changed"]
+[connection signal="value_changed" from="SprProperties/xpos" to="." method="_on_xpos_value_changed"]
+[connection signal="value_changed" from="SprProperties/ypos" to="." method="_on_ypos_value_changed"]

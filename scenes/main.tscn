@@ -114,6 +114,14 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
+[node name="highlight" type="ReferenceRect" parent="."]
+visible = false
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+border_width = 2.0
+editor_only = false
+
 [connection signal="tab_changed" from="HUD/TabContainer" to="." method="_on_tab_container_tab_changed"]
 [connection signal="tab_changed" from="HUD/TabContainer/Tiles" to="." method="_on_tiles_tab_changed"]
 [connection signal="item_selected" from="HUD/TabContainer/Tiles/Stage View/Properties/LoadConfig" to="." method="_on_load_config_item_selected"]
