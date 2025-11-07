@@ -177,7 +177,7 @@ func assemble():
 	return buf
 
 func _init(buf, addr):
-	if buf && addr == null:
+	if buf == null && addr == null:
 		return
 	mode = buf.decode_u16(addr)
 	

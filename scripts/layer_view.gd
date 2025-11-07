@@ -3,6 +3,7 @@ extends Control
 @export var layerList = []
 @export var tileList = []
 @export var moveNode: Control
+@export var camera: Camera2D
 @export var highlight: ReferenceRect
 
 var selSprNode: TextureRect
@@ -11,6 +12,7 @@ var selTile
 var released = true
 
 func reset():
+	$SprProperties/tile.max_value = tileList.size()
 	for node in moveNode.get_children():
 		node.free()
 
@@ -37,7 +39,8 @@ func spr_properties(event:InputEvent,node,lyr,index,sprSize):
 		$SprProperties/xpos.value = tile.x
 		$SprProperties/ypos.value = tile.y
 	elif event is InputEventMouseMotion && released == false:
-		node.global_position = Vector2i(get_global_mouse_position())-Vector2i((selSprSize/2))
+		# this is fucking stoopid
+		node.global_position = Vector2i(get_global_mouse_position()+(camera.offset - Vector2(640,360)))-Vector2i((selSprSize/2))
 		highlight.global_position = node.global_position
 
 # Selected Tile Properties
@@ -159,7 +162,7 @@ func _on_index_value_changed(value: float) -> void:
 	highlight.visible = false
 	var lyr = layerList[value]
 	$"Properties/Addr".text = " Address: 0x%08X" % lyr.address
-	$Properties/id.value = lyr.index
+	$"Properties/id".value = lyr.index
 	$"Properties/layData/prio".value = lyr.priority
 	$"Properties/layData/scroll".value = lyr.scrollrate
 	$"Properties/offsets/xoff".value = lyr.xoffset
@@ -171,3 +174,24 @@ func _on_index_value_changed(value: float) -> void:
 	$"Properties/options2/unk10".button_pressed = lyr.a
 	$"Properties/options2/unk13".button_pressed = lyr.d
 	draw_layer(value)
+
+func _on_import_pressed() -> void:
+	$FileDialog.visible = true
+
+func _on_export_pressed() -> void:
+	$SaveDialog.visible = true
+
+func _on_file_dialog_file_selected(path: String) -> void:
+	var img = Image.load_from_file(path)
+	var lyr = layer.new()
+	lyr.index = layerList.size()
+	lyr.slice_n_dice(img,tileList)
+	layerList.append(lyr)
+	$Properties/Index.max_value += 1
+	$SprProperties/tile.max_value = tileList.size()
+
+func _on_save_dialog_file_selected(path: String) -> void:
+	var id = $Properties/Index.value
+	var lyr = layerList[id]
+	var img = lyr.pngify(tileList)
+	img.save_png(path)

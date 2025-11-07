@@ -29,9 +29,7 @@ var a: bool = false #??
 var flip: bool = false
 var d: bool = false #??
 var tiles = []
-var lowest_x = 0
 var highest_x = 0
-var lowest_y = 0
 var highest_y = 0
 
 func assemble():
@@ -83,3 +81,61 @@ func assemble():
 		p += 8
 	
 	return buf
+
+func pngify(tileList):
+	var img = Image.create_empty(highest_x,highest_y,false,Image.FORMAT_RGBA8)
+	for i in range(tiles.size()):
+		var tile = tiles[i]
+		var spr = tileList[tile.i]
+		var x = tile.x
+		var y = tile.y
+		var sprImg = spr.cachedTexture.get_image() 
+		img.blit_rect(sprImg,Rect2i(0,0,spr.width,spr.height),Vector2i(x,highest_y-y))
+	return img
+
+func make_sprite(img):
+	var spr = sprite.new(null,null)
+	spr.mode = 0
+	spr.clut = 32
+	spr.bpp = 8
+	spr.width = img.get_width()
+	spr.height = img.get_height()
+	spr.tw = ceil(log(spr.width)/log(2))
+	spr.th = ceil(log(spr.height)/log(2))
+	if spr.tw > 9:
+		spr.tw = 0
+	if spr.th > 9:
+		spr.th = 0
+	spr.hash = randi_range(0,0xFFFF)
+	spr.tex.resize(spr.width*spr.height)
+	
+	var cnt = 0
+	for y in spr.height:
+		for x in spr.width:
+			var col = img.get_pixel(x,y)
+			var idx = spr.pal.find(col)
+			if idx != -1:
+				spr.tex.encode_u8((y*spr.width)+x,idx)
+			else:
+				if cnt > 255:
+					break
+				cnt += 1
+				spr.pal.append(col)
+				spr.tex.encode_u8((y*spr.width)+x,spr.pal.size()-1)
+	spr.pal.resize(256)
+	return spr
+
+func slice_n_dice(img:Image, tileList):
+	var htiles = (img.get_width() / 64) + 1
+	var vtiles = (img.get_height() / 64) + 1
+	for v in range(vtiles):
+		for h in range(htiles):
+			var newTile = img.get_region(Rect2i(h*64,v*64,64,64))
+			var spr = make_sprite(newTile)
+			var tile = {
+				i = tileList.size(),
+				x = h*64,
+				y = (vtiles-v)*64
+			}
+			tiles.append(tile)
+			tileList.append(spr)

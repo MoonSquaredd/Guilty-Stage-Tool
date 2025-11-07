@@ -72,14 +72,10 @@ func parse_layers():
 				
 				var spr = tileList[tile]
 				
-				if xoff < $"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].lowest_x:
-					$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].lowest_x = xoff
-				elif xoff+spr.width > $"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].highest_x:
+				if xoff+spr.width > $"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].highest_x:
 					$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].highest_x = xoff+spr.width
 				
-				if yoff-spr.height < $"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].lowest_y:
-					$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].lowest_y = yoff-spr.height
-				elif yoff > $"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].highest_y:
+				if yoff > $"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].highest_y:
 					$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].highest_y = yoff
 				
 				$"HUD/TabContainer/Tiles/Layer View".layerList[lastLayer].tiles.append(entry)
@@ -350,6 +346,7 @@ func _ready() -> void:
 	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/Import".disabled = true
 	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/Export".disabled = true
 	$"HUD/TabContainer/Tiles/Tile View/Properties/Buttons/ExportAll".disabled = true
+	$"HUD/TabContainer/Tiles/Layer View".camera = $Camera
 
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("hide_hud"):
