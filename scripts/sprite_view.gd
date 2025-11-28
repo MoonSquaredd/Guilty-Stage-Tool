@@ -7,6 +7,8 @@ enum file_save_mode {
 	EXPORT_ALL_TILE = 1
 }
 
+var missingSpr = preload("res://images/miss.png")
+
 var selected_colnode
 var copiedCol
 var saveMode: file_save_mode
@@ -72,17 +74,29 @@ func _on_index_value_changed(value: float) -> void:
 	$ColorPicker.visible = false
 	selected_colnode = null
 	var spr = spriteList[value]
-	$"Properties/Addr".text = " Address: 0x%08X" % spr.address
-	$"Properties/Mode".selected = spr.mode
-	$"Properties/pxData/Clut".value = spr.clut
-	$"Properties/pxData/Bpp".value = spr.bpp
-	$"Properties/sizing/Width".value = spr.width
-	$"Properties/sizing/Height".value = spr.height
-	$"Properties/vram/tw".value = spr.tw
-	$"Properties/vram/th".value = spr.th
-	$"Properties/vram/hash".text = " Hash: 0x%04X" % spr.hash
-	load_pal(spr)
-	draw_sprite(spr)
+	if spr == null:
+		$"Properties/Addr".text = " Address: 0x%08X" % 0
+		$"Properties/Mode".selected = 0
+		$"Properties/pxData/Clut".value = 0
+		$"Properties/pxData/Bpp".value = 0
+		$"Properties/sizing/Width".value = 0
+		$"Properties/sizing/Height".value = 0
+		$"Properties/vram/tw".value = 0
+		$"Properties/vram/th".value = 0
+		$"Properties/vram/hash".text = " Hash: 0x%04X" % 0
+		$"Sprite2D".texture = ImageTexture.create_from_image(missingSpr)
+	else:
+		$"Properties/Addr".text = " Address: 0x%08X" % spr.address
+		$"Properties/Mode".selected = spr.mode
+		$"Properties/pxData/Clut".value = spr.clut
+		$"Properties/pxData/Bpp".value = spr.bpp
+		$"Properties/sizing/Width".value = spr.width
+		$"Properties/sizing/Height".value = spr.height
+		$"Properties/vram/tw".value = spr.tw
+		$"Properties/vram/th".value = spr.th
+		$"Properties/vram/hash".text = " Hash: 0x%04X" % spr.hash
+		load_pal(spr)
+		draw_sprite(spr)
 
 func change_color(node, color, idx, spr):
 	node.color = color
@@ -95,6 +109,14 @@ func undo_color(node, color, idx, spr):
 	spr.pal[idx.to_int()] = color
 	spr.cachedTexture = null
 	draw_sprite(spr)
+
+func defrag_sprlist(newSize):
+	var miss = 0
+	for i in range(newSize):
+		var tile = spriteList[i]
+		if tile == null:
+			miss += 1
+		spriteList[i] = spriteList[i+miss]
 
 func _on_color_picker_color_changed(color: Color) -> void:
 	var idx = selected_colnode.name.trim_prefix("Color")
@@ -111,6 +133,19 @@ func _on_export_pressed() -> void:
 	saveMode = file_save_mode.EXPORT_TILE
 	$SaveDialog.visible = true
 
+func _on_delete_pressed() -> void:
+	var index = $"Properties/Index".value
+	var spr = spriteList[index]
+	#if spr.layersUsing.size() > 0:
+	#	spriteList[$"Properties/Index".value] = null
+	#else:
+	spriteList[index] = null
+	#defrag_sprlist(spriteList.size()-1)
+	#spriteList.resize(spriteList.size()-1)
+	#_on_index_value_changed(index)
+	#$"Properties/Index".max_value = spriteList.size()-1
+	
+
 func _on_export_all_pressed() -> void:
 	saveMode = file_save_mode.EXPORT_ALL_TILE
 	$SaveDialog.visible = true
@@ -119,10 +154,14 @@ func _on_save_dialog_dir_selected(dir: String) -> void:
 	match saveMode:
 		file_save_mode.EXPORT_TILE:
 			var idx = $"Properties/Index".value
+			if spriteList[idx] == null:
+				return
 			var img = spriteList[idx].cachedTexture.get_image()
 			img.save_png(dir + "/sprite_%03d.png" % idx)
 		file_save_mode.EXPORT_ALL_TILE:
 			for i in range(spriteList.size()):
+				if spriteList[i] == null:
+					continue
 				spriteList[i].build_sprite()
 				var img = spriteList[i].cachedTexture.get_image()
 				img.save_png(dir + "/sprite_%03d.png" % i)

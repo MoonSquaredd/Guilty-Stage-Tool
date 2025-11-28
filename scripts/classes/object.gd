@@ -53,9 +53,16 @@ func assemble():
 	separate(buf)
 	
 	for i in range(sprites.size()):
-		var spr = sprites[i].assemble()
+		var spr = sprites[i]
 		buf.encode_u32(sprPtr+(i*4),buf.size()-sprPtr)
-		buf.append_array(spr)
+		if spr == null:
+			var fill = PackedByteArray()
+			fill.resize(16)
+			fill.fill(0)
+			buf.append_array(fill)
+		else:
+			spr = spr.assemble()
+			buf.append_array(spr)
 	
 	var scrPtr = buf.size()
 	buf.encode_u32(8,scrPtr)

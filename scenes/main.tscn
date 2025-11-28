@@ -111,8 +111,6 @@ use_native_dialog = true
 visible = false
 layout_mode = 3
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
 
 [node name="highlight" type="ReferenceRect" parent="."]
 visible = false

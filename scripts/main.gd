@@ -194,9 +194,16 @@ func assemble_bg():
 	buf.append_array(newOrg)
 	
 	for i in range(tileList.size()):
-		var spr = tileList[i].assemble()
+		var spr = tileList[i]
 		buf.encode_u32(newTiles+((i+1)*4),buf.size()-newTiles)
-		buf.append_array(spr)
+		if spr == null:
+			var fill = PackedByteArray()
+			fill.resize(16)
+			fill.fill(0)
+			buf.append_array(fill)
+		else:
+			spr = spr.assemble()
+			buf.append_array(spr)
 	
 	for i in range(objects.size()):
 		var newObj = buf.size()
@@ -356,18 +363,20 @@ func _process(delta: float) -> void:
 		$Camera.zoom = Vector2(1,1)
 	
 	if Input.is_action_pressed("camera_up"):
-		$Camera.offset.y -= 8
+		$Camera.offset.y -= 1
 	if Input.is_action_pressed("camera_left"):
-		$Camera.offset.x -= 8
+		$Camera.offset.x -= 1
 	if Input.is_action_pressed("camera_down"):
-		$Camera.offset.y += 8
+		$Camera.offset.y += 1
 	if Input.is_action_pressed("camera_right"):
-		$Camera.offset.x += 8
+		$Camera.offset.x += 1
 	if Input.is_action_pressed("camera_zoom_in"):
 		$Camera.zoom += Vector2(2*delta,2*delta)
 	if Input.is_action_pressed("camera_zoom_out"):
 		$Camera.zoom -= Vector2(2*delta,2*delta)
-		
+	
+	$"HUD/TabContainer/Tiles/Layer View".call("apply_scroll")
+	
 	if $"HUD/TabContainer/Tiles/Stage View/Properties/animToggle".button_pressed == true && $HUD/TabContainer/Tiles.current_tab == 2:
 		for i in range(animations.size()):
 			var anim = animations[i]
