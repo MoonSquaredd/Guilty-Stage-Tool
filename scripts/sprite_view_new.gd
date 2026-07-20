@@ -1,9 +1,12 @@
 extends Control
 
 @export var spriteList: Array[ggSprite] = []
-var export = "single"
-var selected_colnode
-var copiedCol
+var export: String = "single"
+var importF: FileAccess
+var importExt: String
+var importPath: String
+var selected_colnode: ColorRect
+var copiedCol: Color
 var undo_redo = UndoRedo.new()
 
 func show_picker(event: InputEvent, node):
@@ -85,6 +88,9 @@ func _on_export_all_pressed() -> void:
 	$exportFD.visible = true
 	export = "all"
 
+func _on_import_pressed() -> void:
+	$importFD.visible = true
+
 func _on_export_fd_dir_selected(dir: String) -> void:
 	match export:
 		"single":
@@ -92,6 +98,15 @@ func _on_export_fd_dir_selected(dir: String) -> void:
 			match $exportFormat.selected:
 				0:
 					spr.texture.get_image().save_png("%s/Sprite_%04d.png" % [dir,$properties/index.value])
+				1:
+					var f = FileAccess.open("%s/Sprite_%04d.bin" % [dir,$properties/index.value],FileAccess.WRITE)
+					f.store_buffer(spr.raw)
+					f.close()
+				2:
+					#TODO convert 4 bpp sprites to 8 bpp before saving as raw
+					var f = FileAccess.open("%s/Sprite_%04d-W-%d-H-%d.raw" % [dir,$properties/index.value,spr.width,spr.height],FileAccess.WRITE)
+					f.store_buffer(spr.src)
+					f.close()
 		"all":
 			for i in range(spriteList.size()):
 				var spr = spriteList[i]
@@ -99,8 +114,41 @@ func _on_export_fd_dir_selected(dir: String) -> void:
 				match $exportFormat.selected:
 					0:
 						spr.texture.get_image().save_png("%s/Sprite_%04d.png" % [dir,i])
+					1:
+						var f = FileAccess.open("%s/Sprite_%04d.bin" % [dir,i],FileAccess.WRITE)
+						f.store_buffer(spr.raw)
+						f.close()
+					2:
+						#TODO convert 4 bpp sprites to 8 bpp before saving as raw
+						var f = FileAccess.open("%s/Sprite_%04d-W-%d-H-%d.raw" % [dir,i,spr.width,spr.height],FileAccess.WRITE)
+						f.store_buffer(spr.src)
+						f.close()
 		_:
 			return
+
+func import_sprite_sub(type) -> void:
+	var spr: ggSprite
+	match importExt:
+		"png":
+			spr = ggSprite.new("image",importPath)
+		"bin":
+			spr = ggSprite.new("buffer",importF.get_buffer(importF.get_length()))
+	match type:
+		0:
+			spriteList[$properties/index.value] = spr
+			spr.make_texture()
+			_on_index_value_changed($properties/index.value)
+	importF.close()
+
+func _on_import_fd_file_selected(path: String) -> void:
+	importF = FileAccess.open(path,FileAccess.READ)
+	importExt = path.get_slice(".",path.get_slice_count(".")-1)
+	importExt = importExt.to_lower()
+	importPath = path
+	if !importF:
+		#rpint the rror
+		pass
+	import_sprite_sub(0)
 
 func change_color(node, color, idx, spr):
 	node.color = color

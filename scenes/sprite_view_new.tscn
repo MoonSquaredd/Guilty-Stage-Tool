@@ -73,6 +73,7 @@ size_flags_horizontal = 3
 max_value = 512.0
 value = 1.0
 rounded = true
+allow_greater = true
 editable = false
 prefix = "Width:"
 suffix = "px"
@@ -132,7 +133,7 @@ layout_mode = 0
 offset_left = 1192.0
 offset_top = 8.0
 offset_right = 1272.0
-offset_bottom = 39.0
+offset_bottom = 40.0
 selected = 0
 item_count = 3
 popup/item_0/text = ".png"
@@ -146,33 +147,49 @@ popup/item_2/disabled = true
 
 [node name="export" type="Button" parent="." unique_id=1094944142]
 layout_mode = 0
-offset_left = 1047.0
+offset_left = 1044.0
 offset_top = 8.0
-offset_right = 1190.0
-offset_bottom = 39.0
+offset_right = 1188.0
+offset_bottom = 40.0
 text = "Export Sprite as..."
-
-[node name="import" type="Button" parent="." unique_id=1807278600]
-layout_mode = 0
-offset_left = 1047.0
-offset_top = 44.0
-offset_right = 1272.0
-offset_bottom = 75.0
-text = "Import Sprite"
 
 [node name="exportAll" type="Button" parent="." unique_id=92032285]
 layout_mode = 0
-offset_left = 1047.0
+offset_left = 1044.0
+offset_top = 44.0
+offset_right = 1272.0
+offset_bottom = 76.0
+text = "Export All Sprites"
+
+[node name="import" type="Button" parent="." unique_id=1807278600]
+layout_mode = 0
+offset_left = 1044.0
+offset_top = 80.0
+offset_right = 1156.0
+offset_bottom = 112.0
+text = "Import Sprite"
+
+[node name="delete" type="Button" parent="." unique_id=503459948]
+self_modulate = Color(1, 0, 0, 1)
+layout_mode = 0
+offset_left = 1160.0
 offset_top = 80.0
 offset_right = 1272.0
-offset_bottom = 111.0
-text = "Export All Sprites"
+offset_bottom = 112.0
+text = "Delete Sprite"
 
 [node name="exportFD" type="FileDialog" parent="." unique_id=623304382]
 title = "Open a Directory"
 file_mode = 2
 access = 2
 show_hidden_files = true
+use_native_dialog = true
+
+[node name="importFD" type="FileDialog" parent="." unique_id=1793632702]
+title = "Open a File"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.png,*.bin;Image Files and Binary Sprites")
 use_native_dialog = true
 
 [node name="hint" type="ReferenceRect" parent="." unique_id=763542223]
@@ -187,10 +204,10 @@ editor_only = false
 [node name="ColorPicker" type="ColorPicker" parent="." unique_id=2144073678]
 visible = false
 layout_mode = 0
-offset_left = 1066.0
-offset_top = 128.0
-offset_right = 1330.0
-offset_bottom = 848.0
+offset_left = 1062.0
+offset_top = 116.0
+offset_right = 1326.0
+offset_bottom = 836.0
 scale = Vector2(0.75, 0.75)
 edit_intensity = false
 deferred_mode = true
@@ -199,5 +216,7 @@ picker_shape = 1
 [connection signal="value_changed" from="properties/index" to="." method="_on_index_value_changed"]
 [connection signal="pressed" from="export" to="." method="_on_export_pressed"]
 [connection signal="pressed" from="exportAll" to="." method="_on_export_all_pressed"]
+[connection signal="pressed" from="import" to="." method="_on_import_pressed"]
 [connection signal="dir_selected" from="exportFD" to="." method="_on_export_fd_dir_selected"]
+[connection signal="file_selected" from="importFD" to="." method="_on_import_fd_file_selected"]
 [connection signal="color_changed" from="ColorPicker" to="." method="_on_color_picker_color_changed"]
