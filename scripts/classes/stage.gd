@@ -16,6 +16,7 @@ func _init(buffer: PackedByteArray, mode):
 	#print("tiles: ",tiles)
 	p = 4
 	while true:
+		if tiles[0].gg_ver == ggSprite.GG_VER.X && buffer.decode_u32(p+4) >= buffer.size(): break
 		if buffer.decode_u32(p) >= buffer.size(): break
 		objects.append(ggObject.new(buffer.slice(buffer.decode_u32(p),buffer.decode_u32(p+4)),buffer.decode_u32(p)))
 		p += 4

@@ -18,6 +18,8 @@ func show_picker(event: InputEvent, node):
 		$ColorPicker.visible = true
 
 func load_pal(spr:ggSprite):
+	if spr.palette.size() == 0:
+		return
 	var colorCnt = (256 if spr.bpp == 8 else 16)
 	var rowCnt = clamp(colorCnt / 16.0,1,16)
 	var row = 1

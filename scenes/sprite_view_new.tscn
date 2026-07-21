@@ -140,10 +140,8 @@ popup/item_0/text = ".png"
 popup/item_0/id = 0
 popup/item_1/text = ".bin"
 popup/item_1/id = 1
-popup/item_1/disabled = true
 popup/item_2/text = ".raw"
 popup/item_2/id = 2
-popup/item_2/disabled = true
 
 [node name="export" type="Button" parent="." unique_id=1094944142]
 layout_mode = 0
