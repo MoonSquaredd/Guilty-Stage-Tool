@@ -3,6 +3,7 @@ class_name Stage extends Resource
 var tiles: Array[ggSprite] = []
 var objects: Array[ggObject] = []
 var layers: Array[ggLayer] = []
+var animations: Array[ggLayerAnim] = []
 var layer_defs: PackedByteArray
 
 func _init(buffer: PackedByteArray, mode):
@@ -61,18 +62,45 @@ func make_layers():
 			ggLayer.orgID.BACKGROUND: layers[currentLayer].background = true; p += 4
 			ggLayer.orgID.FOREGROUND: layers[currentLayer].foreground = true; p += 4
 			ggLayer.orgID.ANIMATION:
+				var newAnim = ggLayerAnim.new()
+				animations.append(newAnim)
+				currentAnim += 1
+				currentAnimFrame = -1
 				p += 4
 			ggLayer.orgID.WATER: layers[currentLayer].water = true; p += 4
 			ggLayer.orgID.FLIP_HORIZONTAL: layers[currentLayer].flip = true; p += 4
 			ggLayer.orgID.BLENDING_ADD: layers[currentLayer].blend = true; p += 4
 			ggLayer.orgID.UNK_13: layers[currentLayer].unk13 = true; p += 4
 			ggLayer.orgID.ANIM_DURATION:
+				var animFrame = {
+					duration = layer_defs.decode_u16(p+2),
+					dur_min = layer_defs.decode_u16(p+2),
+					dur_max = layer_defs.decode_u16(p+2),
+					active_layers = [],
+					inactive_layers = []
+				}
+				animations[currentAnim].frames.append(animFrame)
+				currentAnimFrame += 1
 				p += 4
 			ggLayer.orgID.ANIM_VAR_DURATION:
+				var mind = layer_defs.decode_u16(p+2)
+				var maxd = layer_defs.decode_u16(p+4)
+				var rd = randi_range(mind,maxd)
+				var animFrame = {
+					duration = rd,
+					dur_min = mind,
+					dur_max = maxd,
+					active_layers = [],
+					inactive_layers = []
+				}
+				animations[currentAnim].frames.append(animFrame)
+				currentAnimFrame += 1
 				p += 6
 			ggLayer.orgID.ANIM_LAYER_ON:
+				animations[currentAnim].frames[currentAnimFrame].active_layers.append(layer_defs.decode_u16(p+2))
 				p += 4
 			ggLayer.orgID.ANIM_LAYER_OFF:
+				animations[currentAnim].frames[currentAnimFrame].inactive_layers.append(layer_defs.decode_u16(p+2))
 				p += 4
 			0xFFFF:
 				break

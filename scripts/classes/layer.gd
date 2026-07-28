@@ -28,6 +28,7 @@ var water: bool = false
 var flip: bool = false
 var d: bool = false #??
 var tiles = []
+var use = []
 var highest_x = 0
 var highest_y = 0
 

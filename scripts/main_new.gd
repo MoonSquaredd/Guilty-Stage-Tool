@@ -2,7 +2,7 @@ extends Node
 
 const MAX_LOADED_STAGES = 8
 
-var spriteView = preload("res://scenes/sprite_view_new.tscn")
+var spriteView = preload("res://scenes/sprite_view.tscn")
 
 var stage_buffers: Array[PackedByteArray] = []
 var loaded_stages: Array[Stage] = []

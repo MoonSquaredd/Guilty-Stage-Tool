@@ -1,7 +1,7 @@
-class_name AnimLayer extends Resource
+class_name ggLayerAnim extends Resource
 
 var enabled: bool = true
-var current: int = 0
+var duration: int = 0
 var frame: int = 0
 var frames = []
 

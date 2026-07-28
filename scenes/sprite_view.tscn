@@ -1,47 +1,47 @@
-[gd_scene load_steps=2 format=3 uid="uid://cqs0nhx8genoj"]
+[gd_scene format=3 uid="uid://c7slrtnntmbxk"]
 
-[ext_resource type="Script" uid="uid://jw02unj5f3g6" path="res://scripts/sprite_view.gd" id="1_63xxx"]
+[ext_resource type="Script" uid="uid://dk6segumolv3a" path="res://scripts/sprite_view.gd" id="1_v71k7"]
 
-[node name="Sprite View" type="Control"]
+[node name="SpriteView" type="Control" unique_id=910380772]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_63xxx")
+focus_mode = 2
+script = ExtResource("1_v71k7")
 
-[node name="Properties" type="VBoxContainer" parent="."]
+[node name="properties" type="VBoxContainer" parent="." unique_id=1344176578]
 layout_mode = 0
-offset_top = 6.0
-offset_right = 360.0
-offset_bottom = 656.0
+offset_right = 400.0
+offset_bottom = 171.0
 
-[node name="Index" type="SpinBox" parent="Properties"]
+[node name="index" type="SpinBox" parent="properties" unique_id=1583808577]
 layout_mode = 2
 max_value = 0.0
 rounded = true
 prefix = " Sprite"
 
-[node name="Addr" type="LineEdit" parent="Properties"]
+[node name="mode" type="OptionButton" parent="properties" unique_id=1967720395]
 layout_mode = 2
-text = " Address: 0x00000000"
-editable = false
-
-[node name="Mode" type="OptionButton" parent="Properties"]
-layout_mode = 2
-disabled = true
 selected = 0
-item_count = 2
+item_count = 3
 popup/item_0/text = "Mode: Uncompressed"
 popup/item_0/id = 0
+popup/item_0/disabled = true
 popup/item_1/text = "Mode: Compressed"
 popup/item_1/id = 1
+popup/item_1/disabled = true
+popup/item_2/text = "Mode: AltCompressed"
+popup/item_2/id = 5
+popup/item_2/disabled = true
 
-[node name="pxData" type="HBoxContainer" parent="Properties"]
+[node name="pix" type="HBoxContainer" parent="properties" unique_id=1387455659]
 layout_mode = 2
+alignment = 1
 
-[node name="Clut" type="SpinBox" parent="Properties/pxData"]
+[node name="clut" type="SpinBox" parent="properties/pix" unique_id=1073096251]
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = 16.0
@@ -50,9 +50,9 @@ step = 16.0
 value = 32.0
 rounded = true
 editable = false
-prefix = " CLUT:"
+suffix = "Bit CLUT"
 
-[node name="Bpp" type="SpinBox" parent="Properties/pxData"]
+[node name="bpp" type="SpinBox" parent="properties/pix" unique_id=1821147042]
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = 4.0
@@ -61,91 +61,136 @@ step = 4.0
 value = 8.0
 rounded = true
 editable = false
-prefix = " Bit Depth:"
+suffix = "Bits per pixel"
 
-[node name="sizing" type="HBoxContainer" parent="Properties"]
-layout_mode = 2
-
-[node name="Width" type="SpinBox" parent="Properties/sizing"]
-layout_mode = 2
-size_flags_horizontal = 3
-max_value = 65535.0
-value = 1.0
-rounded = true
-editable = false
-prefix = " Width:"
-
-[node name="Height" type="SpinBox" parent="Properties/sizing"]
-layout_mode = 2
-size_flags_horizontal = 3
-max_value = 65535.0
-value = 1.0
-rounded = true
-editable = false
-prefix = " Height:"
-
-[node name="vram" type="HBoxContainer" parent="Properties"]
-layout_mode = 2
-
-[node name="tw" type="SpinBox" parent="Properties/vram"]
-layout_mode = 2
-size_flags_horizontal = 3
-max_value = 65535.0
-value = 1.0
-rounded = true
-editable = false
-prefix = " tw:"
-
-[node name="th" type="SpinBox" parent="Properties/vram"]
-layout_mode = 2
-size_flags_horizontal = 3
-max_value = 65535.0
-value = 1.0
-rounded = true
-editable = false
-prefix = " th:"
-
-[node name="hash" type="LineEdit" parent="Properties/vram"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = " Hash: 0xFFFF"
-editable = false
-
-[node name="Label" type="Label" parent="Properties"]
-layout_mode = 2
-text = " Palette:"
-
-[node name="PalView" type="VBoxContainer" parent="Properties"]
-custom_minimum_size = Vector2(0, 316)
-layout_mode = 2
-
-[node name="Buttons" type="HBoxContainer" parent="Properties"]
+[node name="siz" type="HBoxContainer" parent="properties" unique_id=1301517666]
 layout_mode = 2
 alignment = 1
 
-[node name="Import" type="Button" parent="Properties/Buttons"]
+[node name="width" type="SpinBox" parent="properties/siz" unique_id=159573156]
 layout_mode = 2
-size_flags_horizontal = 4
-text = "Import"
+size_flags_horizontal = 3
+max_value = 512.0
+value = 1.0
+rounded = true
+allow_greater = true
+editable = false
+prefix = "Width:"
+suffix = "px"
 
-[node name="Export" type="Button" parent="Properties/Buttons"]
+[node name="height" type="SpinBox" parent="properties/siz" unique_id=481831521]
 layout_mode = 2
-size_flags_horizontal = 4
-text = "Export"
+size_flags_horizontal = 3
+max_value = 512.0
+value = 1.0
+rounded = true
+editable = false
+prefix = "Height:"
+suffix = "px"
 
-[node name="Delete" type="Button" parent="Properties/Buttons"]
+[node name="mem" type="HBoxContainer" parent="properties" unique_id=1005822841]
 layout_mode = 2
-size_flags_horizontal = 4
-text = "Delete"
+alignment = 1
 
-[node name="ExportAll" type="Button" parent="Properties/Buttons"]
+[node name="tw" type="SpinBox" parent="properties/mem" unique_id=825073034]
 layout_mode = 2
+size_flags_horizontal = 3
+max_value = 9.0
+value = 9.0
+rounded = true
+editable = false
+prefix = "TW:"
+
+[node name="th" type="SpinBox" parent="properties/mem" unique_id=1488210928]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 9.0
+value = 9.0
+rounded = true
+editable = false
+prefix = "TH:"
+
+[node name="hash" type="LineEdit" parent="properties/mem" unique_id=55412897]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Hash: 0xFFFF"
+editable = false
+
+[node name="Label" type="Label" parent="properties" unique_id=232383400]
+layout_mode = 2
+text = " Palette:"
+
+[node name="PalView" type="VBoxContainer" parent="properties" unique_id=1032904272]
+custom_minimum_size = Vector2(0, 316)
+layout_mode = 2
+
+[node name="sprite" type="Sprite2D" parent="." unique_id=1530040753]
+position = Vector2(720, 285)
+scale = Vector2(2, 2)
+
+[node name="exportFormat" type="OptionButton" parent="." unique_id=858378238]
+layout_mode = 0
+offset_left = 1192.0
+offset_top = 8.0
+offset_right = 1272.0
+offset_bottom = 40.0
+selected = 0
+item_count = 3
+popup/item_0/text = ".png"
+popup/item_0/id = 0
+popup/item_1/text = ".bin"
+popup/item_1/id = 1
+popup/item_2/text = ".raw"
+popup/item_2/id = 2
+
+[node name="export" type="Button" parent="." unique_id=1094944142]
+layout_mode = 0
+offset_left = 1044.0
+offset_top = 8.0
+offset_right = 1188.0
+offset_bottom = 40.0
+text = "Export Sprite as..."
+
+[node name="exportAll" type="Button" parent="." unique_id=92032285]
+layout_mode = 0
+offset_left = 1044.0
+offset_top = 44.0
+offset_right = 1272.0
+offset_bottom = 76.0
 text = "Export All Sprites"
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(640, 298)
+[node name="import" type="Button" parent="." unique_id=1807278600]
+layout_mode = 0
+offset_left = 1044.0
+offset_top = 80.0
+offset_right = 1156.0
+offset_bottom = 112.0
+text = "Import Sprite"
 
-[node name="hint" type="ReferenceRect" parent="."]
+[node name="delete" type="Button" parent="." unique_id=503459948]
+self_modulate = Color(1, 0, 0, 1)
+layout_mode = 0
+offset_left = 1160.0
+offset_top = 80.0
+offset_right = 1272.0
+offset_bottom = 112.0
+text = "Delete Sprite"
+
+[node name="exportFD" type="FileDialog" parent="." unique_id=623304382]
+title = "Open a Directory"
+file_mode = 2
+access = 2
+show_hidden_files = true
+use_native_dialog = true
+
+[node name="importFD" type="FileDialog" parent="." unique_id=1793632702]
+title = "Open a File"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.png,*.bin;Image Files and Binary Sprites")
+use_native_dialog = true
+
+[node name="hint" type="ReferenceRect" parent="." unique_id=763542223]
 visible = false
 custom_minimum_size = Vector2(16, 16)
 layout_mode = 0
@@ -154,36 +199,31 @@ offset_bottom = 16.0
 border_width = 2.0
 editor_only = false
 
-[node name="ColorPicker" type="ColorPicker" parent="."]
+[node name="ColorPicker" type="ColorPicker" parent="." unique_id=2144073678]
 visible = false
 layout_mode = 0
-offset_left = 980.0
-offset_top = 68.0
-offset_right = 1278.0
-offset_bottom = 675.0
+offset_left = 1062.0
+offset_top = 116.0
+offset_right = 1326.0
+offset_bottom = 836.0
+scale = Vector2(0.75, 0.75)
 edit_intensity = false
 deferred_mode = true
 picker_shape = 1
 
-[node name="SaveDialog" type="FileDialog" parent="."]
-title = "Open a Directory"
-file_mode = 2
-access = 2
-use_native_dialog = true
+[node name="ConfirmationDialog" type="ConfirmationDialog" parent="." unique_id=849444833]
+oversampling_override = 1.0
+initial_position = 2
+size = Vector2i(320, 180)
+ok_button_text = "Confirm"
+dialog_autowrap = true
 
-[node name="FileDialog" type="FileDialog" parent="."]
-title = "Open a File"
-file_mode = 0
-access = 2
-filters = PackedStringArray("*.png")
-show_hidden_files = true
-use_native_dialog = true
-
-[connection signal="value_changed" from="Properties/Index" to="." method="_on_index_value_changed"]
-[connection signal="pressed" from="Properties/Buttons/Import" to="." method="_on_import_pressed"]
-[connection signal="pressed" from="Properties/Buttons/Export" to="." method="_on_export_pressed"]
-[connection signal="pressed" from="Properties/Buttons/Delete" to="." method="_on_delete_pressed"]
-[connection signal="pressed" from="Properties/Buttons/ExportAll" to="." method="_on_export_all_pressed"]
+[connection signal="value_changed" from="properties/index" to="." method="_on_index_value_changed"]
+[connection signal="pressed" from="export" to="." method="_on_export_pressed"]
+[connection signal="pressed" from="exportAll" to="." method="_on_export_all_pressed"]
+[connection signal="pressed" from="import" to="." method="_on_import_pressed"]
+[connection signal="pressed" from="delete" to="." method="_on_delete_pressed"]
+[connection signal="dir_selected" from="exportFD" to="." method="_on_export_fd_dir_selected"]
+[connection signal="file_selected" from="importFD" to="." method="_on_import_fd_file_selected"]
 [connection signal="color_changed" from="ColorPicker" to="." method="_on_color_picker_color_changed"]
-[connection signal="dir_selected" from="SaveDialog" to="." method="_on_save_dialog_dir_selected"]
-[connection signal="file_selected" from="FileDialog" to="." method="_on_file_dialog_file_selected"]
+[connection signal="confirmed" from="ConfirmationDialog" to="." method="_on_confirmation_dialog_confirmed"]
